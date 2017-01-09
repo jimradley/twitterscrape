@@ -1,9 +1,3 @@
-<Query Kind="Program">
-  <Reference>&lt;RuntimeDirectory&gt;\System.Web.dll</Reference>
-  <NuGetReference>HtmlAgilityPack</NuGetReference>
-  <Namespace>HtmlAgilityPack</Namespace>
-</Query>
-
 void Main()
 {
 	string location = @"Leeds%20";
@@ -25,28 +19,33 @@ public void Scrape(string query)
 			for (int i = 0; i < 100; i++)
 		{
 		Console.WriteLine("from " + dateFrom + " TO " + dateTo);
-		Thread.Sleep(1000);
+		Thread.Sleep(500);
 		dateFrom = GetPreviousDate(dateFrom);
 		dateTo = GetPreviousDate(dateTo);
 		
 	HtmlWeb hw = new HtmlWeb();
            // string url = @"https://twitter.com/search?q=stockdales%20leeds%20great%20OR%20%3A)%20OR%20awesome%20OR%20fantastic%20OR%20happy%20OR%20good&src=typd";
            
-			 string url = GetUrl(dateFrom, dateTo, query);
+			string url = GetUrl(dateFrom, dateTo, query);
 			HtmlDocument doc = hw.Load(url);
 					
             HtmlNode docNode = doc.DocumentNode;
+			HtmlNodeCollection lis3 = docNode.SelectNodes("//*[@id='timeline']");
+			HtmlNodeCollection lis4 = docNode.SelectNodes("//*[@class='stream-container']");			
 			HtmlNodeCollection lis = docNode.SelectNodes("//p[@class='TweetTextSize  js-tweet-text tweet-text']");
-						
-			if (lis != null)
+		    HtmlNodeCollection lis2 = docNode.SelectNodes("//tr[@class='tweet-container']");
+			
+			// docNode.InnerHtml.Dump();
+			var f = docNode.SelectNodes("//*[@class='dir-ltr']");
+			if (f != null)
 			{
-				Console.WriteLine("from " + dateFrom + " TO " + dateTo);
-				foreach (var li in lis)
+				foreach (var element in f)
 				{
-				sb.AppendLine(li.InnerText);
-					Console.WriteLine(li.InnerText.ToString());
-				}					
-				//Console.WriteLine(lis.Count());
+					// "our" implies self tweet.
+					// Console.WriteLine(element.InnerText);
+					if (!element.InnerText.ToUpper().Contains("OUR"))
+						sb.AppendLine(element.InnerText);
+				}		
 			}
 		}
 		
@@ -69,7 +68,7 @@ public string GetPreviousDate(string startDate)
 
 public string GetUrl(string startDate, string endDate, string query)
 {
-string startUrl = @"https://twitter.com/search?q=";	
+string startUrl = @"https://twitter.com/search?f=tweets&vertical=default&q=";	
 
 string url = startUrl + query + "%20since%3A" + startDate + @"%20until%3A" + endDate;
 Console.WriteLine(url);
